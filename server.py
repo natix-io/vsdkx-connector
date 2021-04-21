@@ -27,14 +27,14 @@ class Server:
             port: This is the gRPC server port, if it is None, it would be retrieved from environment (GRPC_PORT)
         """
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
-        module = ConnectVisionX(port if port is not None else os.getenv("GRPC_PORT", DEFAULT_PORT)
-                                , event_detector_interface)
+        module = ConnectVisionX(event_detector_interface)
 
         connect_module_pb2_grpc.add_ConnectModuleServicer_to_server(module,
                                                                     server)
-        server.add_insecure_port(f'[::]:{module.port}')
+        grpc_port = port if port is not None else os.getenv("GRPC_PORT", DEFAULT_PORT)
+        server.add_insecure_port(f'[::]:{grpc_port}')
         server.start()
-        print(f"gRPC server is running on port {module.port}")
+        print(f"gRPC server is running on port {grpc_port}")
         server.wait_for_termination()
 
 
@@ -50,12 +50,11 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         for prediction
     """
 
-    def __init__(self, port, event_detector_interface):
+    def __init__(self, event_detector_interface):
         """
         port: Set port number which would be retrieved during server run.
         event_detector_interface: this is a class that should have the predict method which accepts image.
         """
-        self.port = port
         self.event_detector_interface = event_detector_interface
 
 
