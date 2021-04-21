@@ -105,9 +105,9 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
             (Inference object): serialized tuple of inference results returned
             from predict_method
         """
-        frame_bytes = b''
-        for request in request_iterator:
-            frame_bytes += request.frame_chunk
+        frame_bytes = b''.join(
+            request.frame_chunk for request in request_iterator
+        )
 
         frame = unpickle_frame_from_message(frame_bytes)
         inference = self.event_detector_interface.predict(frame)
