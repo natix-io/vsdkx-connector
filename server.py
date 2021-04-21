@@ -80,7 +80,7 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         try:
             config = request.conf
             config_dict = parse_yaml_string_to_dict(config)
-            self.event_detector_interface(config)
+            self.event_detector_interface(config_dict)
             response = connect_module_pb2.StatusCode(status=1)
         except Exception as e:
             print(f"Configure procedure call raised Error: {e}, {type(e)}")
