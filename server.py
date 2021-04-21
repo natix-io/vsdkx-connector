@@ -52,7 +52,6 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
     def __init__(self, port, predict_method):
         """
         Set port number which would be retrieved during server run.
-        Create and store instance of EventDetector class
         """
         self.port = port
         self.predict_method = predict_method
@@ -60,7 +59,6 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
 
     def Configure(self, request, context):
         """
-        Remote procedure to create new instance of EventDetector class with
         configuration passed as yaml string
 
         Args:
@@ -74,8 +72,6 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
             error has occurred
         """
         # Try parsing received yaml string into dictionary of configuration
-        # settings and initialize and store new instance of EventDetector into
-        # event_detector attribute, with received configuration.
         # If everything goes fine, set status code to 1
         # Except in case of something going wrong, log the exception and set
         # status code to be returned to 0
@@ -93,7 +89,7 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         """
         Remote procedure receives byte string chunks in serialized form,
         unpacks them, concatenates and deserializes into frame.
-        Calls predict method of EventDetector on received frame.
+        Calls predict method on received frame and config_dict.
 
         Args:
             request_iterator (Generator object): gRPC messages containing
@@ -103,7 +99,7 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
 
         Returns:
             (Inference object): serialized tuple of inference results returned
-            from EventDetector prediction
+            from predict_method
         """
         frame_bytes = b''
         for request in request_iterator:
