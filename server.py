@@ -45,14 +45,12 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
     called by gRPC.
 
     Attributes:
-        port (str): port number retrieved during server run
-        predict_method (predict method of AI Processor): we pass the image and config dict to this method
+        event_detector_interface: This interface should have the predict(img) function
         for prediction
     """
 
     def __init__(self, event_detector_interface):
         """
-        port: Set port number which would be retrieved during server run.
         event_detector_interface: this is a class that should have the predict method which accepts image.
         """
         self.event_detector_interface = event_detector_interface
