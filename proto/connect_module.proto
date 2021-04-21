@@ -1,0 +1,31 @@
+// Protocol buffer syntax is defined here
+syntax = "proto3";
+
+// Define frame process request type
+message FrameRequest {
+  bytes frame_chunk = 1;
+}
+
+// Define inference result type
+message Inference {
+  bytes result = 1;
+}
+
+// Define module configuration message
+message Configuration {
+  string conf = 1;
+}
+
+// Define status message of module configuration success
+message StatusCode {
+  int32 status = 1;
+}
+
+// Define gRPC service
+service ConnectModule {
+  // Send frame chunks and retrieve inference
+  rpc ProcessFrame (stream FrameRequest) returns (Inference);
+
+  // Send Configuration and retrieve status code
+  rpc Configure (Configuration) returns (StatusCode);
+}
