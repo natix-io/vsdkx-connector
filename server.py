@@ -1,14 +1,14 @@
 from concurrent import futures
+
+import client.connect_module_pb2 as connect_module_pb2
+import client.connect_module_pb2_grpc as connect_module_pb2_grpc
 import grpc
+import os
+from utils.serialisation import unpickle_frame_from_message
+from utils.serialisation import serialize_inference_result
+from utils.yaml_utils import parse_yaml_string_to_dict
 
-import gRPC.client.connect_module_pb2 as connect_module_pb2
-import gRPC.client.connect_module_pb2_grpc as connect_module_pb2_grpc
-
-from gRPC.utils.serialisation import unpickle_frame_from_message
-from gRPC.utils.serialisation import serialize_inference_result
-from gRPC.utils.yaml_utils import get_docker_port, parse_yaml_string_to_dict
-
-from main import EventDetector
+DEFAULT_PORT = 7914
 
 
 class Server:
@@ -16,20 +16,28 @@ class Server:
     This is a class with all the functions related to the gRPC server
     launch, execution, etc
     """
+
     @staticmethod
-    def run():
+    def run(event_detector_interface, port: str = None):
         """
         Function to start gRPC server, pass service class to it, add dedicated
         port to operate through and wait for termination
+        Args:
+            event_detector_interface: this is a class that should have the
+                predict method which accepts image.
+            port: This is the gRPC server port, if it is None, it would be
+                retrieved from environment (GRPC_PORT)
         """
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
-        module = ConnectVisionX()
+        module = ConnectVisionX(event_detector_interface)
 
         connect_module_pb2_grpc.add_ConnectModuleServicer_to_server(module,
                                                                     server)
-        server.add_insecure_port(f'[::]:{module.port}')
+        grpc_port = port if port is not None else os.getenv("GRPC_PORT"
+                                                            , DEFAULT_PORT)
+        server.add_insecure_port(f'[::]:{grpc_port}')
         server.start()
-        print("CarDetection server is running")
+        print(f"gRPC server is running on port {grpc_port}")
         server.wait_for_termination()
 
 
@@ -40,21 +48,20 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
     called by gRPC.
 
     Attributes:
-        port (str): port number retrieved during server run
-        event_detector (EventDetector object): instance of EventDetector used
-        for prediction
+        event_detector_interface: This interface should have
+            the predict(img) function for prediction
     """
-    def __init__(self):
+
+    def __init__(self, event_detector_interface):
         """
-        Set port number which would be retrieved during server run.
-        Create and store instance of EventDetector class
+        event_detector_interface: this is a class that should have the predict
+            method which accepts image.
         """
-        self.port = get_docker_port()
-        self.event_detector = EventDetector()
+        self.event_detector_interface = event_detector_interface
+
 
     def Configure(self, request, context):
         """
-        Remote procedure to create new instance of EventDetector class with
         configuration passed as yaml string
 
         Args:
@@ -68,15 +75,13 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
             error has occurred
         """
         # Try parsing received yaml string into dictionary of configuration
-        # settings and initialize and store new instance of EventDetector into
-        # event_detector attribute, with received configuration.
         # If everything goes fine, set status code to 1
         # Except in case of something going wrong, log the exception and set
         # status code to be returned to 0
         try:
             config = request.conf
             config_dict = parse_yaml_string_to_dict(config)
-            self.event_detector = EventDetector(config_dict)
+            self.event_detector_interface(config_dict)
             response = connect_module_pb2.StatusCode(status=1)
         except Exception as e:
             print(f"Configure procedure call raised Error: {e}, {type(e)}")
@@ -88,7 +93,7 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         """
         Remote procedure receives byte string chunks in serialized form,
         unpacks them, concatenates and deserializes into frame.
-        Calls predict method of EventDetector on received frame.
+        Calls predict method on received frame and config_dict.
 
         Args:
             request_iterator (Generator object): gRPC messages containing
@@ -98,14 +103,14 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
 
         Returns:
             (Inference object): serialized tuple of inference results returned
-            from EventDetector prediction
+            from predict_method
         """
         frame_bytes = b''
         for request in request_iterator:
             frame_bytes += request.frame_chunk
 
         frame = unpickle_frame_from_message(frame_bytes)
-        inference = self.event_detector.predict(frame)
+        inference = self.event_detector_interface.predict(frame)
 
         response = connect_module_pb2.Inference()
         response.result = serialize_inference_result(inference)
