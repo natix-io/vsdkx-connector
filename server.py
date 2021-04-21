@@ -23,15 +23,18 @@ class Server:
         Function to start gRPC server, pass service class to it, add dedicated
         port to operate through and wait for termination
         Args:
-            event_detector_interface: this is a class that should have the predict method which accepts image.
-            port: This is the gRPC server port, if it is None, it would be retrieved from environment (GRPC_PORT)
+            event_detector_interface: this is a class that should have the
+                predict method which accepts image.
+            port: This is the gRPC server port, if it is None, it would be
+                retrieved from environment (GRPC_PORT)
         """
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
         module = ConnectVisionX(event_detector_interface)
 
         connect_module_pb2_grpc.add_ConnectModuleServicer_to_server(module,
                                                                     server)
-        grpc_port = port if port is not None else os.getenv("GRPC_PORT", DEFAULT_PORT)
+        grpc_port = port if port is not None else os.getenv("GRPC_PORT"
+                                                            , DEFAULT_PORT)
         server.add_insecure_port(f'[::]:{grpc_port}')
         server.start()
         print(f"gRPC server is running on port {grpc_port}")
@@ -45,13 +48,14 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
     called by gRPC.
 
     Attributes:
-        event_detector_interface: This interface should have the predict(img) function
-        for prediction
+        event_detector_interface: This interface should have
+            the predict(img) function for prediction
     """
 
     def __init__(self, event_detector_interface):
         """
-        event_detector_interface: this is a class that should have the predict method which accepts image.
+        event_detector_interface: this is a class that should have the predict
+            method which accepts image.
         """
         self.event_detector_interface = event_detector_interface
 
