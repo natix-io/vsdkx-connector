@@ -18,16 +18,17 @@ class Server:
     """
 
     @staticmethod
-    def run(predict_method, port: str = None):
+    def run(event_detector_interface, port: str = None):
         """
         Function to start gRPC server, pass service class to it, add dedicated
         port to operate through and wait for termination
         Args:
-            predict_method: this is a method that we pass image and config_dict to that.
+            event_detector_interface: this is a class that should have the predict method which accepts image.
             port: This is the gRPC server port, if it is None, it would be retrieved from environment (GRPC_PORT)
         """
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
-        module = ConnectVisionX(port if port is not None else os.getenv("GRPC_PORT", DEFAULT_PORT), predict_method)
+        module = ConnectVisionX(port if port is not None else os.getenv("GRPC_PORT", DEFAULT_PORT)
+                                , event_detector_interface)
 
         connect_module_pb2_grpc.add_ConnectModuleServicer_to_server(module,
                                                                     server)
@@ -49,13 +50,14 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         for prediction
     """
 
-    def __init__(self, port, predict_method):
+    def __init__(self, port, event_detector_interface):
         """
-        Set port number which would be retrieved during server run.
+        port: Set port number which would be retrieved during server run.
+        event_detector_interface: this is a class that should have the predict method which accepts image.
         """
         self.port = port
-        self.predict_method = predict_method
-        self.config_dict = None
+        self.event_detector_interface = event_detector_interface
+
 
     def Configure(self, request, context):
         """
@@ -77,7 +79,8 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         # status code to be returned to 0
         try:
             config = request.conf
-            self.config_dict = parse_yaml_string_to_dict(config)
+            config_dict = parse_yaml_string_to_dict(config)
+            self.event_detector_interface(config)
             response = connect_module_pb2.StatusCode(status=1)
         except Exception as e:
             print(f"Configure procedure call raised Error: {e}, {type(e)}")
@@ -106,7 +109,7 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
             frame_bytes += request.frame_chunk
 
         frame = unpickle_frame_from_message(frame_bytes)
-        inference = self.predict_method(frame, self.config_dict)
+        inference = self.event_detector_interface.predict(frame)
 
         response = connect_module_pb2.Inference()
         response.result = serialize_inference_result(inference)
