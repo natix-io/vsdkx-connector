@@ -17,21 +17,6 @@ def import_config_file(path):
     return config_data
 
 
-def get_docker_port(base_path='./', path='docker-compose.yml'):
-    """
-    Import exposed port number for gRPC server to be run on from
-    'docker-compose.yml'
-
-    Args:
-        base_path (string): Base path string
-        path (string): path to docker-compose.yml
-
-    Returns:
-        (str): port number as a string
-    """
-    config = import_config_file(base_path + path)
-    return config["services"]["ubuntu-tensorflow-cardetection"]["expose"][0]
-
 
 def parse_yaml_string_to_dict(conf_str):
     """
