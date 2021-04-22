@@ -1,12 +1,12 @@
 from concurrent import futures
 
-import client.connect_module_pb2 as connect_module_pb2
-import client.connect_module_pb2_grpc as connect_module_pb2_grpc
+from ai_connector.client import connect_module_pb2
+from ai_connector.client import connect_module_pb2_grpc
 import grpc
 import os
-from utils.serialisation import unpickle_frame_from_message
-from utils.serialisation import serialize_inference_result
-from utils.yaml_utils import parse_yaml_string_to_dict
+from ai_connector.utils.serialisation import unpickle_frame_from_message
+from ai_connector.utils.serialisation import serialize_inference_result
+from ai_connector.utils.yaml_utils import parse_yaml_string_to_dict
 
 DEFAULT_PORT = 7914
 
