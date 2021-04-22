@@ -35,7 +35,7 @@ class Server:
                                                                     server)
         grpc_port = port if port is not None else os.getenv("GRPC_PORT"
                                                             , DEFAULT_PORT)
-        server.add_insecure_port(f'[::]:{grpc_port}')
+        server.add_insecure_port(f'0.0.0.0:{grpc_port}')
         server.start()
         print(f"gRPC server is running on port {grpc_port}")
         server.wait_for_termination()
