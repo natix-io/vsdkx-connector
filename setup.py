@@ -7,7 +7,7 @@ setup(
     author='Guja',
     author_email='guja@natix.io',
     # Needed to actually package something
-    packages=['ai_connector'],
+    packages=['ai_connector','ai_connector/client', 'ai_connector/utils'],
     # Needed for dependencies
     install_requires=['grpcio', 'grpcio-tools'],
     # *strongly* suggested for sharing
