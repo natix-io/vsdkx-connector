@@ -1,12 +1,12 @@
 from concurrent import futures
 
-import client.connect_module_pb2 as connect_module_pb2
-import client.connect_module_pb2_grpc as connect_module_pb2_grpc
+from ai_connector.client import connect_module_pb2
+from ai_connector.client import connect_module_pb2_grpc
 import grpc
 import os
-from utils.serialisation import unpickle_frame_from_message
-from utils.serialisation import serialize_inference_result
-from utils.yaml_utils import parse_yaml_string_to_dict
+from ai_connector.utils.serialisation import unpickle_frame_from_message
+from ai_connector.utils.serialisation import serialize_inference_result
+from ai_connector.utils.yaml_utils import parse_yaml_string_to_dict
 
 DEFAULT_PORT = 7914
 
@@ -58,6 +58,7 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
             method which accepts image.
         """
         self.event_detector_interface = event_detector_interface
+        self.event_detector_instance = None
 
 
     def Configure(self, request, context):
@@ -81,7 +82,7 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         try:
             config = request.conf
             config_dict = parse_yaml_string_to_dict(config)
-            self.event_detector_interface(config_dict)
+            self.event_detector_instance = self.event_detector_interface(config_dict)
             response = connect_module_pb2.StatusCode(status=1)
         except Exception as e:
             print(f"Configure procedure call raised Error: {e}, {type(e)}")
@@ -110,7 +111,7 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         )
 
         frame = unpickle_frame_from_message(frame_bytes)
-        inference = self.event_detector_interface.predict(frame)
+        inference = self.event_detector_instance.predict(frame)
 
         response = connect_module_pb2.Inference()
         response.result = serialize_inference_result(inference)
