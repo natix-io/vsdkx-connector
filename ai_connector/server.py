@@ -81,11 +81,9 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         # status code to be returned to 0
         try:
             config = request.conf
-            print("Server.py config string from request:", config)
+            print(f"config string received as request:\n {config}")
             config_dict = parse_yaml_string_to_dict(config)
-            print("config dict is", config_dict)
             system_config = config_dict.get("system_config")
-            print("system_config is ", system_config)
             base_path = config_dict.get("base_path")
             self.event_detector_instance = self.event_detector_interface(
                 system_config=system_config,
