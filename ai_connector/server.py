@@ -35,7 +35,7 @@ class Server:
                                                                     server)
         grpc_port = port if port is not None else os.getenv("GRPC_PORT"
                                                             , DEFAULT_PORT)
-        server.add_insecure_port(f'0.0.0.0:{grpc_port}')
+        server.add_insecure_port(f'[::]:{grpc_port}')
         server.start()
         print(f"gRPC server is running on port {grpc_port}")
         server.wait_for_termination()
@@ -60,7 +60,6 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         self.event_detector_interface = event_detector_interface
         self.event_detector_instance = None
 
-
     def Configure(self, request, context):
         """
         configuration passed as yaml string
@@ -83,11 +82,8 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
             config = request.conf
             print(f"config string received as request:\n {config}")
             config_dict = parse_yaml_string_to_dict(config)
-            system_config = config_dict.get("system_config")
-            base_path = config_dict.get("base_path")
             self.event_detector_instance = self.event_detector_interface(
-                system_config=system_config,
-                base_path=base_path
+                config_dict
             )
             response = connect_module_pb2.StatusCode(status=1)
         except Exception as e:
