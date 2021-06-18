@@ -11,5 +11,5 @@ setup(
     # Needed for dependencies
     install_requires=['grpcio'],
     # *strongly* suggested for sharing
-    version='0.1',
+    version='1.0',
 )

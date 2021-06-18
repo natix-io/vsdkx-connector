@@ -113,7 +113,7 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         )
 
         frame = unpickle_frame_from_message(frame_bytes)
-        inference = self.event_detector_instance.predict(frame)
+        inference = self.event_detector_instance.detect(frame)
 
         response = connect_module_pb2.Inference()
         response.result = serialize_inference_result(inference)
