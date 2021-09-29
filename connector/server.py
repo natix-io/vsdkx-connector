@@ -1,3 +1,4 @@
+import logging
 from concurrent import futures
 
 from ai_connector.client import connect_module_pb2
@@ -8,6 +9,7 @@ from ai_connector.utils.serialisation import unpickle_frame_from_message
 from ai_connector.utils.serialisation import serialize_inference_result
 from ai_connector.utils.yaml_utils import parse_yaml_string_to_dict
 
+LOG_TAG = "Connector"
 DEFAULT_PORT = 7914
 
 
@@ -57,6 +59,7 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         event_detector_interface: this is a class that should have the predict
             method which accepts image.
         """
+        self._logger = logging.getLogger(LOG_TAG)
         self.event_detector_interface = event_detector_interface
         self.event_detector_instance = None
 
@@ -80,14 +83,18 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         # status code to be returned to 0
         try:
             config = request.conf
-            print(f"config string received as request:\n {config}")
+            self._logger.info(
+                    f"config string received as request:\n {config}"
+                    )
             config_dict = parse_yaml_string_to_dict(config)
             self.event_detector_instance = self.event_detector_interface(
                 config_dict
             )
             response = connect_module_pb2.StatusCode(status=1)
         except Exception as e:
-            print(f"Configure procedure call raised Error: {e}, {type(e)}")
+            self._logger.traceback(
+                    f"Configure procedure call raised Error: {e}, {type(e)}"
+                    )
             response = connect_module_pb2.StatusCode(status=0)
 
         return response
