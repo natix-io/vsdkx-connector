@@ -7,9 +7,9 @@ setup(
     author='Guja',
     author_email='g.mekokishvili@omedia.ge',
     # Needed to actually package something
-    packages=['ai_connector','ai_connector/client', 'ai_connector/utils'],
+    packages=['connector','connector/client', 'connector/utils'],
     # Needed for dependencies
     install_requires=['grpcio'],
     # *strongly* suggested for sharing
-    version='1.0',
+    version='2.0',
 )
