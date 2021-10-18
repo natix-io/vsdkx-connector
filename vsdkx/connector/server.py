@@ -84,8 +84,8 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         try:
             config = request.conf
             self._logger.info(
-                    f"config string received as request:\n {config}"
-                    )
+                f"config string received as request:\n {config}"
+            )
             config_dict = parse_yaml_string_to_dict(config)
             self.event_detector_instance = self.event_detector_interface(
                 config_dict
@@ -93,8 +93,8 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
             response = connect_module_pb2.StatusCode(status=1)
         except Exception as e:
             self._logger.traceback(
-                    f"Configure procedure call raised Error: {e}, {type(e)}"
-                    )
+                f"Configure procedure call raised Error: {e}, {type(e)}"
+            )
             response = connect_module_pb2.StatusCode(status=0)
 
         return response
@@ -115,12 +115,15 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
             (Inference object): serialized tuple of inference results returned
             from predict_method
         """
+
         frame_bytes = b''.join(
             request.frame_chunk for request in request_iterator
         )
 
         frame = unpickle_frame_from_message(frame_bytes)
-        inference = self.event_detector_instance.detect(frame)
+        metadata = frame["metadata"]
+        frame = frame["frame"]
+        inference = self.event_detector_instance.detect(frame, metadata)
 
         response = connect_module_pb2.Inference()
         response.result = serialize_inference_result(inference)
