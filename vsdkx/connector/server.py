@@ -1,5 +1,5 @@
 import logging
-from concurrent imvsdkx.connectorport futures
+from concurrent import futures
 
 from vsdkx.connector.client import connect_module_pb2
 from vsdkx.connector.client import connect_module_pb2_grpc
