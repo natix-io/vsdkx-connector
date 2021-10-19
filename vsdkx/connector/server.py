@@ -1,13 +1,13 @@
 import logging
 from concurrent import futures
 
-from ai_connector.client import connect_module_pb2
-from ai_connector.client import connect_module_pb2_grpc
+from vsdkx.connector.client import connect_module_pb2
+from vsdkx.connector.client import connect_module_pb2_grpc
 import grpc
 import os
-from ai_connector.utils.serialisation import unpickle_frame_from_message
-from ai_connector.utils.serialisation import serialize_inference_result
-from ai_connector.utils.yaml_utils import parse_yaml_string_to_dict
+from vsdkx.connector.utils.serialisation import unpickle_frame_from_message
+from vsdkx.connector.utils.serialisation import serialize_inference_result
+from vsdkx.connector.utils.yaml_utils import parse_yaml_string_to_dict
 
 LOG_TAG = "Connector"
 DEFAULT_PORT = 7914
