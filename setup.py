@@ -1,4 +1,5 @@
-from setuptools import setup
+from setuptools import setup, find_namespace_packages
+
 
 setup(
     # Needed to silence warnings (and to be a worthwhile package)
@@ -7,9 +8,10 @@ setup(
     author='Guja',
     author_email='g.mekokishvili@omedia.ge',
     # Needed to actually package something
-    packages=['connector','connector/client', 'connector/utils'],
+    namespace_packages=['vsdkx'],
+    packages=find_namespace_packages(include=['vsdkx*']),
     # Needed for dependencies
     install_requires=['grpcio'],
     # *strongly* suggested for sharing
-    version='2.0',
+    version='2.1',
 )
