@@ -92,7 +92,7 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
             )
             response = connect_module_pb2.StatusCode(status=1)
         except Exception as e:
-            self._logger.traceback(
+            self._logger.exception(
                 f"Configure procedure call raised Error: {e}, {type(e)}"
             )
             response = connect_module_pb2.StatusCode(status=0)
