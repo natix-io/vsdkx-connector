@@ -123,6 +123,13 @@ class ConnectVisionX(connect_module_pb2_grpc.ConnectModuleServicer):
         frame = unpickle_frame_from_message(frame_bytes)
         metadata = frame["metadata"]
         frame = frame["frame"]
+        
+        self._logger.debug(f"Process frame request received " 
+                           f"frame {frame.shape} "
+                           f"metadata {metadata} "
+
+        )        
+
         inference = self.event_detector_instance.detect(frame, metadata)
 
         response = connect_module_pb2.Inference()
